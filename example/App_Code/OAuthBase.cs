@@ -150,7 +150,7 @@ namespace OAuth {
         }
                         
         /// <summary>
-        /// Normalizes the request parameters accoriding to the spec
+        /// Normalizes the request parameters according to the spec
         /// </summary>
         /// <param name="parameters">The list of parameters already sorted</param>
         /// <returns>a string representing the normalized parameters</returns>
@@ -213,7 +213,13 @@ namespace OAuth {
 
             parameters.Sort(new QueryParameterComparer());
 
-            normalizedUrl = string.Format("{0}://{1}{2}", url.Scheme, url.Host, url.AbsolutePath);
+            normalizedUrl = string.Format("{0}://{1}", url.Scheme, url.Host);
+            if (!((url.Scheme == "http" && url.Port == 80) &&
+                  (url.Scheme == "https" && url.Port == 443)))
+            {
+                normalizedUrl += ":" + url.Port;
+            }
+            normalizedUrl += url.AbsolutePath;
             normalizedRequestParameters = NormalizeRequestParameters(parameters);
 
             StringBuilder signatureBase = new StringBuilder();			
