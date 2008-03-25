@@ -297,17 +297,27 @@ namespace LitJson
                 inst_string_builder.Remove (0, inst_string_builder.Length);
         }
 
-        public void Write (bool boolean)
+        public void WriteNull()
         {
-            DoValidation (Condition.Value);
-            PutNewline ();
+            DoValidation(Condition.Value);
+            PutNewline();
 
-            Put (boolean ? "true" : "false");
+            Put("null");
 
             context.ExpectingValue = false;
         }
 
-        public void Write (decimal number)
+        public void Write(bool boolean)
+        {
+            DoValidation(Condition.Value);
+            PutNewline();
+
+            Put(boolean ? "true" : "false");
+
+            context.ExpectingValue = false;
+        }
+
+        public void Write(decimal number)
         {
             DoValidation (Condition.Value);
             PutNewline ();
