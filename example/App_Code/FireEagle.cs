@@ -44,10 +44,10 @@ namespace Yahoo.FireEagle
         public static string CONSUMER_KEY = null,
             CONSUMER_SECRET = null;
 
-        private string oauth_token = null,
-            oauth_token_secret = null;
+        private string oauthToken = null,
+            oauthTokenSecret = null;
 
-        private bool is_request_token = false;
+        private bool isRequestToken = false;
 
         /// <summary>
         /// Constructor for 
@@ -60,13 +60,13 @@ namespace Yahoo.FireEagle
         /// <summary>
         /// Constructor for when you have a request or access token.
         /// </summary>
-        /// <param name="oauth_token"></param>
+        /// <param name="oauthToken"></param>
         /// <param name="oauth_secret"></param>
         /// <param name="is_request_token"></param>
-        public FireEagle(string oauth_token, string oauth_token_secret)
+        public FireEagle(string oauthToken, string oauthTokenSecret)
         {
-            this.oauth_token = oauth_token;
-            this.oauth_token_secret = oauth_token_secret;
+            this.oauthToken = oauthToken;
+            this.oauthTokenSecret = oauthTokenSecret;
             Setup();
         }
 
@@ -85,21 +85,21 @@ namespace Yahoo.FireEagle
             NameValueCollection token = CallOauth("GET", FE_API_ROOT + "oauth/request_token", null);
             if (token["oauth_token"] == null) throw new Exception("Missing oauth_token value in /oauth/request_token response from Fire Eagle");
             if (token["oauth_token_secret"] == null) throw new Exception("Missing oauth_token_secret value in /oauth/request_token response from Fire Eagle");
-            this.oauth_token = token["oauth_token"];
-            this.oauth_token_secret = token["oauth_token_secret"];
-            is_request_token = true;
+            this.oauthToken = token["oauth_token"];
+            this.oauthTokenSecret = token["oauth_token_secret"];
+            isRequestToken = true;
         }
 
-        public string OauthToken { get { return this.oauth_token; } }
-        public string OauthTokenSecret { get { return this.oauth_token_secret; } }
+        public string OauthToken { get { return this.oauthToken; } }
+        public string OauthTokenSecret { get { return this.oauthTokenSecret; } }
 
         // After calling GetRequestToken, this returns the URL to redirect to
         public string AuthorizeUrl
         {
             get
             {
-                Debug.Assert(is_request_token);
-                return FE_ROOT + "oauth/authorize?oauth_token=" + oauth_token;
+                Debug.Assert(isRequestToken);
+                return FE_ROOT + "oauth/authorize?oauth_token=" + oauthToken;
             }
         }
 
@@ -109,9 +109,9 @@ namespace Yahoo.FireEagle
             NameValueCollection token = CallOauth("GET", FE_API_ROOT + "oauth/access_token", null);
             if (token["oauth_token"] == null) throw new Exception("Missing oauth_token value in /oauth/access_token response from Fire Eagle");
             if (token["oauth_token_secret"] == null) throw new Exception("Missing oauth_token_secret value in /oauth/access_token response from Fire Eagle");
-            this.oauth_token = token["oauth_token"];
-            this.oauth_token_secret = token["oauth_token_secret"];
-            is_request_token = false;
+            this.oauthToken = token["oauth_token"];
+            this.oauthTokenSecret = token["oauth_token_secret"];
+            isRequestToken = false;
         }
 
         private NameValueCollection CallOauth(string method, string base_url, NameValueCollection args)
@@ -174,7 +174,7 @@ namespace Yahoo.FireEagle
             Uri uri = new Uri(url);
             string ts = GenerateTimeStamp(),
                 nonce = GenerateNonce();
-            string full_url = GenerateSignature(uri, CONSUMER_KEY, CONSUMER_SECRET, oauth_token, oauth_token_secret, method, ts, nonce, OAuthBase.SignatureTypes.HMACSHA1);
+            string full_url = GenerateSignature(uri, CONSUMER_KEY, CONSUMER_SECRET, oauthToken, oauthTokenSecret, method, ts, nonce, OAuthBase.SignatureTypes.HMACSHA1);
 
             HttpWebRequest req = (HttpWebRequest)WebRequest.Create(method == "POST" ? normalizedUrl : full_url);
             req.Method = method;

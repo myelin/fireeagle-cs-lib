@@ -13,10 +13,12 @@ using System.Collections.Specialized;
 
 public partial class _Default : System.Web.UI.Page 
 {
+    // flags to pass back to Default.aspx
     public bool authorized;
     public JsonData location = null,
         lookup = null;
 
+    // current url, minus any query params
     private string BaseUrl
     {
         get
