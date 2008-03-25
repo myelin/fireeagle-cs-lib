@@ -1,4 +1,8 @@
 <?xml version="1.0"?>
+<!--
+    Sample Web.Config for FireEagle C# walkthru.  Copy this to Web.Config
+    and put your consumer key and secret in the <AppSettings> block below.
+-->
 <!-- 
     Note: As an alternative to hand editing this file you can use the 
     web admin tool to configure settings for your application. Use
@@ -9,8 +13,8 @@
 -->
 <configuration>
   <appSettings>
-    <add key="FEConsumerKey" value="sr1zgau17pig"/>
-    <add key="FEConsumerSecret" value="1p4b8alt6867dneugxds1eqm78xp2zn1"/>
+    <add key="FEConsumerKey" value=""/>
+    <add key="FEConsumerSecret" value=""/>
   </appSettings>
   <connectionStrings/>
 	<system.web>
