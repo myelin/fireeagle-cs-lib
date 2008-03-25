@@ -25,7 +25,7 @@ public partial class _Default : System.Web.UI.Page
         {
             Uri url = Request.Url;
             string u = url.Scheme + "://" + url.Host;
-            if (!((url.Scheme == "http" && url.Port == 80) &&
+            if (!((url.Scheme == "http" && url.Port == 80) ||
                   (url.Scheme == "https" && url.Port == 443)))
             {
                 u += ":" + url.Port;

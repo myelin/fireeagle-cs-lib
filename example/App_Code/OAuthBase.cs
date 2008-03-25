@@ -214,7 +214,7 @@ namespace OAuth {
             parameters.Sort(new QueryParameterComparer());
 
             normalizedUrl = string.Format("{0}://{1}", url.Scheme, url.Host);
-            if (!((url.Scheme == "http" && url.Port == 80) &&
+            if (!((url.Scheme == "http" && url.Port == 80) ||
                   (url.Scheme == "https" && url.Port == 443)))
             {
                 normalizedUrl += ":" + url.Port;
