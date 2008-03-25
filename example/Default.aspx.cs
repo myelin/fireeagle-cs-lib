@@ -9,11 +9,13 @@ using System.Web.UI.WebControls.WebParts;
 using System.Web.UI.HtmlControls;
 using Yahoo.FireEagle;
 using LitJson;
+using System.Collections.Specialized;
 
 public partial class _Default : System.Web.UI.Page 
 {
     public bool authorized;
-    public JsonData location = null;
+    public JsonData location = null,
+        lookup = null;
 
     private string BaseUrl
     {
@@ -33,7 +35,11 @@ public partial class _Default : System.Web.UI.Page
 
     protected void Page_Load(object sender, EventArgs e)
     {
-        FireEagle.FE_ROOT = FireEagle.FE_API_ROOT = "http://rails.colinux.tmp:3000/";
+        // for FE devs: set FERoot and FEApiRoot appSettings in Web.Config to point at a local FireEagle install
+        if (ConfigurationManager.AppSettings["FERoot"] != null)
+            FireEagle.FE_ROOT = ConfigurationManager.AppSettings["FERoot"];
+        if (ConfigurationManager.AppSettings["FEApiRoot"] != null)
+            FireEagle.FE_API_ROOT = ConfigurationManager.AppSettings["FEApiRoot"];
 
         if (Request.QueryString["f"] == "start")
         {
@@ -69,6 +75,36 @@ public partial class _Default : System.Web.UI.Page
         if (authorized)
         {
             FireEagle fe = new FireEagle((string)Session["access_token"], (string)Session["access_secret"]);
+
+            if (Request.HttpMethod == "POST")
+            {
+                NameValueCollection where = new NameValueCollection();
+                foreach (string k in Request.Form.Keys)
+                {
+                    switch (k)
+                    {
+                        case "lat":
+                        case "lon":
+                        case "q":
+                        case "place_id":
+                        case "woeid":
+                            string v = Request.Form[k];
+                            if (!string.IsNullOrEmpty(v)) where[k] = v;
+                            break;
+                    }
+                }
+
+                switch (Request.Form["submit"]) {
+                    case "Move!":
+                        fe.update(where);
+                        Response.Redirect(BaseUrl);
+                        return;
+                    case "Lookup":
+                        lookup = fe.lookup(where);
+                        break;
+                }
+            }
+
             location = fe.user();
         }
     }

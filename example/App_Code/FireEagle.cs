@@ -17,9 +17,23 @@ using System.Net;
 using System.Text;
 using System.IO;
 using LitJson;
+using System.Collections;
 
 namespace Yahoo.FireEagle
 {
+
+    public class FireEagleException : Exception
+    {
+        public FireEagleException(string msg)
+            : base(msg)
+        {
+        }
+
+        public FireEagleException(string msg, Exception innerException)
+            : base(msg, innerException)
+        {
+        }
+    }
 
     public class FireEagle : OAuthBase
     {
@@ -154,8 +168,8 @@ namespace Yahoo.FireEagle
                 foreach (string k in args)
                 {
                     data += (data == "" ? "" : "&") + UrlEncode(k) + "=" + UrlEncode(args[k]);
-                    if (data != "") url += (base_url.IndexOf("?") == -1 ? "?" : "&") + data;
                 }
+                if (data != "") url += (base_url.IndexOf("?") == -1 ? "?" : "&") + data;
             }
             Uri uri = new Uri(url);
             string ts = GenerateTimeStamp(),
@@ -164,7 +178,7 @@ namespace Yahoo.FireEagle
 
             HttpWebRequest req = (HttpWebRequest)WebRequest.Create(method == "POST" ? normalizedUrl : full_url);
             req.Method = method;
-            req.ContentType = "application/x-www-urlencoded";
+            req.ContentType = "application/x-www-form-urlencoded";
             try
             {
                 if (method == "POST")
@@ -188,7 +202,22 @@ namespace Yahoo.FireEagle
             }
             catch (WebException e)
             {
-                throw new Exception(String.Format("Error communicating with widget server: {0}", e.Message), e);
+                try
+                {
+                    StreamReader resp_stream = new StreamReader(e.Response.GetResponseStream());
+                    string raw_data = resp_stream.ReadToEnd();
+                    if (e.Response.ContentType.StartsWith("application/json"))
+                    {
+                        JsonData err = JsonMapper.ToObject(raw_data);
+                        JsonData rsp = err["rsp"];
+                        JsonData message = rsp["message"];
+                        throw new FireEagleException(String.Format("Error from Fire Eagle: {0}", (string)message));
+                    }
+                }
+                catch (FireEagleException fe_e) { throw fe_e; }
+                catch (Exception failure_e) { } // if anything fails above, just fall through
+
+                throw new FireEagleException(String.Format("Error communicating with Fire Eagle: {0}", e.Message), e);
             }
         }
 

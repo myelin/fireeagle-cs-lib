@@ -10,8 +10,26 @@
 <% if (!authorized) { %>
     <p><a href="?f=start">Click here to authenticate with FireEagle!</a></p>
 <% } else { %>
-    <p>you're authenticated!</p>
+    <% if (lookup != null) { %>
+        <h2>Lookup response</h2>
+        <%= lookup.ToJson() %>
+    <% } %>
+
+    <h2>Where you are</h2>
     <%= location.ToJson() %>
+
+    <h2>Update</h2>
+    
+    <p>Enter a location below and click "Move!" to update.</p>
+
+    <form method="POST">
+        <p><label for="free-text-entry">Free-text entry:</label> <input type="text" name="q" id="free-text-entry" size="40"></p>
+        <p><label for="place-id">Place ID:</label> <input type="text" name="place_id" id="place-id" size="40"></p>
+        <p><label for="woeid">WOEID:</label> <input type="text" name="woeid" id="woeid" size="10"></p>
+        <p><label for="lat">Lat:</label> <input type="text" name="lat" id="lat" size="10"> <label for="lon">Lon:</label> <input type="text" name="lon" size="10"></p>
+        <input type="submit" name="submit" value="Move!">
+        or just check your query: <input type="submit" name="submit" value="Lookup">
+    </form>
 <% } %>
 </body>
 </html>
