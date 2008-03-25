@@ -213,15 +213,19 @@ namespace OAuth {
 
             parameters.Sort(new QueryParameterComparer());
 
-            string normalizedRequestParameters = NormalizeRequestParameters(parameters);
+            normalizedUrl = string.Format("{0}://{1}{2}", url.Scheme, url.Host, url.AbsolutePath);
+            normalizedRequestParameters = NormalizeRequestParameters(parameters);
 
             StringBuilder signatureBase = new StringBuilder();			
             signatureBase.AppendFormat("{0}&", httpMethod.ToUpper());
-            signatureBase.AppendFormat("{0}&", UrlEncode(string.Format("{0}://{1}{2}", url.Scheme, url.Host, url.AbsolutePath)));
+            signatureBase.AppendFormat("{0}&", UrlEncode(normalizedUrl));
             signatureBase.AppendFormat("{0}", UrlEncode(normalizedRequestParameters));
 
             return signatureBase.ToString();
         }
+
+        public string normalizedUrl = null,
+            normalizedRequestParameters = null;
 
         /// <summary>
         /// Generate the signature value based on the given signature base and hash algorithm
@@ -267,9 +271,10 @@ namespace OAuth {
                     string signatureBase = GenerateSignatureBase(url, consumerKey, token, tokenSecret, httpMethod, timeStamp, nonce, HMACSHA1SignatureType);
 
                     HMACSHA1 hmacsha1 = new HMACSHA1();
-                    hmacsha1.Key = Encoding.ASCII.GetBytes(string.Format("{0}&{1}", UrlEncode(consumerSecret), UrlEncode(tokenSecret)));
-                    
-                    return GenerateSignatureUsingHash(signatureBase, hmacsha1);
+                    hmacsha1.Key = Encoding.ASCII.GetBytes(string.Format("{0}&{1}", UrlEncode(consumerSecret), string.IsNullOrEmpty(tokenSecret) ? "" : UrlEncode(tokenSecret)));
+
+                    normalizedRequestParameters += "&oauth_signature=" + UrlEncode(GenerateSignatureUsingHash(signatureBase, hmacsha1));
+                    return normalizedUrl + "?" + normalizedRequestParameters;
                     
                 case SignatureTypes.RSASHA1:
                     throw new NotImplementedException();
