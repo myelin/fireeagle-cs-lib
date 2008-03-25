@@ -19,7 +19,7 @@ public partial class _Default : System.Web.UI.Page
         lookup = null;
 
     // current url, minus any query params
-    private string BaseUrl
+    public string BaseUrl
     {
         get
         {

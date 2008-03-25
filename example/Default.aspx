@@ -10,6 +10,7 @@
 <% if (!authorized) { %>
     <p><a href="?f=start">Click here to authenticate with FireEagle!</a></p>
 <% } else { %>
+    <p>You are authenticated with <a href="<%= Yahoo.FireEagle.FireEagle.FE_ROOT %>">Fire Eagle</a>!  (<a href="<%= BaseUrl %>?f=start">Change settings</a>.)</p>
     <% if (lookup != null) { %>
         <h2>Lookup response</h2>
         <%= lookup.ToJson() %>
