@@ -16,6 +16,7 @@ using System;
 using System.Net;
 using System.Text;
 using System.IO;
+using LitJson;
 
 namespace Yahoo.FireEagle
 {
@@ -77,6 +78,8 @@ namespace Yahoo.FireEagle
 
         public string OauthToken { get { return this.oauth_token; } }
         public string OauthTokenSecret { get { return this.oauth_token_secret; } }
+
+        // After calling GetRequestToken, this returns the URL to redirect to
         public string AuthorizeUrl
         {
             get
@@ -109,10 +112,37 @@ namespace Yahoo.FireEagle
             return resp;
         }
 
-        private void CallJson(string method, string base_url, NameValueCollection args)
+        private JsonData CallJson(string method, string base_url, NameValueCollection args)
         {
-            string resp = CallInternal(method, base_url, args);
-            throw new NotImplementedException("can't parse json yet");
+            string raw_data = CallInternal(method, base_url, args);
+            JsonData data = JsonMapper.ToObject(raw_data);
+            return data;
+        }
+
+        // Generic API method caller
+        public JsonData Call(string api_method, NameValueCollection args)
+        {
+            string http_method = (api_method == "user") ? "GET" : "POST";
+            string base_url = FE_API_ROOT + "api/0.1/" + api_method + ".json";
+            return CallJson(http_method, base_url, args);
+        }
+
+        // Wrapper for the 'where am I' method: "user"
+        public JsonData user()
+        {
+            return Call("user", null);
+        }
+
+        // Wrapper for the 'set my location' method: "update"
+        public JsonData update(NameValueCollection where)
+        {
+            return Call("update", where);
+        }
+
+        // Wrapper for the 'lookup location' method: "lookup"
+        public JsonData lookup(NameValueCollection where)
+        {
+            return Call("lookup", where);
         }
 
         private string CallInternal(string method, string base_url, NameValueCollection args)

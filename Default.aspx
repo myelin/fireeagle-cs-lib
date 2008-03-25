@@ -7,20 +7,11 @@
     <title>Fire Eagle C# library demo</title>
 </head>
 <body>
-<%
-    switch (auth_state)
-    {
-        case "done":
-%>
-    <p>you're authenticated!</p>
-<%
-            break;
-        default:
-%>
+<% if (!authorized) { %>
     <p><a href="?f=start">Click here to authenticate with FireEagle!</a></p>
-<%
-            break;
-    }
-%>
+<% } else { %>
+    <p>you're authenticated!</p>
+    <%= location.ToJson() %>
+<% } %>
 </body>
 </html>

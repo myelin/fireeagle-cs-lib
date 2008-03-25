@@ -8,10 +8,12 @@ using System.Web.UI.WebControls;
 using System.Web.UI.WebControls.WebParts;
 using System.Web.UI.HtmlControls;
 using Yahoo.FireEagle;
+using LitJson;
 
 public partial class _Default : System.Web.UI.Page 
 {
-    public string auth_state;
+    public bool authorized;
+    public JsonData location = null;
 
     private string BaseUrl
     {
@@ -63,6 +65,11 @@ public partial class _Default : System.Web.UI.Page
             return;
         }
 
-        auth_state = (string)Session["auth_state"];
+        authorized = ((string)Session["auth_state"] == "done");
+        if (authorized)
+        {
+            FireEagle fe = new FireEagle((string)Session["access_token"], (string)Session["access_secret"]);
+            location = fe.user();
+        }
     }
 }
