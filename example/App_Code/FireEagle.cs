@@ -18,6 +18,7 @@ using System.Text;
 using System.IO;
 using LitJson;
 using System.Collections;
+using System.Xml.Serialization;
 
 namespace Yahoo.FireEagle
 {
@@ -126,37 +127,32 @@ namespace Yahoo.FireEagle
             return resp;
         }
 
-        private JsonData CallJson(string method, string base_url, NameValueCollection args)
-        {
-            string raw_data = CallInternal(method, base_url, args);
-            JsonData data = JsonMapper.ToObject(raw_data);
-            return data;
-        }
-
         // Generic API method caller
-        public JsonData Call(string api_method, NameValueCollection args)
+        public JsonData CallJson(string api_method, NameValueCollection args)
         {
             string http_method = (api_method == "user") ? "GET" : "POST";
             string base_url = FE_API_ROOT + "api/0.1/" + api_method + ".json";
-            return CallJson(http_method, base_url, args);
+            string raw_data = CallInternal(http_method, base_url, args);
+            JsonData data = JsonMapper.ToObject(raw_data);
+            return data;
         }
 
         // Wrapper for the 'where am I' method: "user"
         public JsonData user()
         {
-            return Call("user", null);
+            return CallJson("user", null);
         }
 
         // Wrapper for the 'set my location' method: "update"
         public JsonData update(NameValueCollection where)
         {
-            return Call("update", where);
+            return CallJson("update", where);
         }
 
         // Wrapper for the 'lookup location' method: "lookup"
         public JsonData lookup(NameValueCollection where)
         {
-            return Call("lookup", where);
+            return CallJson("lookup", where);
         }
 
         private string CallInternal(string method, string base_url, NameValueCollection args)
