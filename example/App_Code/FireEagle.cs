@@ -22,61 +22,130 @@ using System.Xml.Serialization;
 
 namespace Yahoo.FireEagle.API
 {
+    public enum GeoType
+    {
+        Unknown,
+        Point,
+        Box
+    }
+
+    public class Point
+    {
+        public double Latitude, Longitude;
+        public Point(double latitude, double longitude) {
+            Latitude = latitude;
+            Longitude = longitude;
+        }
+    }
+
+    public class Box
+    {
+        public Point TopLeft, BottomRight;
+        public Box(Point topLeft, Point bottomRight)
+        {
+            TopLeft = topLeft;
+            BottomRight = bottomRight;
+        }
+    }
+
     public class Location
     {
-        [XmlAttributeAttribute("best-guess")]
-        public bool IsBestGuess;
+        [XmlAttribute("best-guess")]
+        public bool IsBestGuess; // if true, this is the most likely current location for the user
 
-        [XmlElementAttribute("id")]
-        public string Id;
+        [XmlElement("id")]
+        public string Id; // internal location id
 
-        //TODO: parse (use a property which can be set with a string)
-        [XmlElementAttribute("point", Namespace = "http://www.georss.org/georss")]
-        public string Point;
+        [XmlIgnore()]
+        public GeoType GeoType = GeoType.Unknown;
 
-        //TODO: parse (use a property which can be set with a string)
-        [XmlElementAttribute("box", Namespace = "http://www.georss.org/georss")]
-        public string Box;
+        [XmlIgnore()]
+        public Point Point; // exact point or centroid of location
 
-        [XmlElementAttribute("label")]
+        [XmlElement("point", Namespace = "http://www.georss.org/georss")]
+        public string __SetPoint
+        {
+            get { return null; } // XmlSerializer needs this
+            set
+            {
+                GeoType = GeoType.Point;
+                string[] bits = value.Split(new char[] { ' ' });
+                Point = new Point(double.Parse(bits[0]), double.Parse(bits[1]));
+                // make fake bounding box out of that
+                BoundingBox = new Box(Point, Point);
+            }
+        }
+
+        [XmlIgnore()]
+        public Box BoundingBox;
+
+        [XmlElement("box", Namespace = "http://www.georss.org/georss")]
+        public string __SetBox
+        {
+            get { return null; }
+            set
+            {
+                GeoType = GeoType.Box;
+                string[] bits = value.Split(new char[] { ' ' });
+                BoundingBox = new Box(
+                    new Point(double.Parse(bits[0]), double.Parse(bits[1])),
+                    new Point(double.Parse(bits[2]), double.Parse(bits[3])));
+                // calculate center point
+                Point = new Point((BoundingBox.TopLeft.Latitude + BoundingBox.BottomRight.Latitude) / 2,
+                    (BoundingBox.TopLeft.Longitude + BoundingBox.BottomRight.Longitude) / 2);
+            }
+        }
+
+        [XmlElement("label")]
         public string Label;
 
-        [XmlElementAttribute("level")]
+        [XmlElement("level")]
         public int Level;
 
-        [XmlElementAttribute("level-name")]
+        [XmlElement("level-name")]
         public string LevelName;
 
-        [XmlElementAttribute("located-at")]
+        [XmlElement("located-at")]
         public string LocatedAt;
 
-        [XmlElementAttribute("name")]
+        [XmlElement("name")]
         public string Name;
 
-        [XmlElementAttribute("place-id")]
+        [XmlElement("place-id")]
         public string PlaceId;
 
-        [XmlElementAttribute("woeid")]
+        [XmlElement("woeid")]
         public string WoeId;
     }
 
     public class LocationHierarchy
     {
-        [XmlElementAttribute("location")]
+        [XmlElement("location")]
         public Location[] Locations;
     }
 
     public class User
     {
-        [XmlElementAttribute("location-hierarchy")]
+        [XmlAttribute("token")]
+        public string Token; // oauth_token for this user
+
+        [XmlElement("location-hierarchy")]
         public LocationHierarchy LocationHierarchy;
     }
 
-    [XmlRootAttribute("rsp")]
+    [XmlRoot("rsp")]
     public class Response
     {
-        [XmlElementAttribute("user")]
+        [XmlAttribute("stat")]
+        public string Status;
+
+        // response to 'user' API method
+        [XmlElement("user")]
         public User User;
+
+        // response to 'recent' API method
+        [XmlArrayItem("user"), XmlArray("users")]
+        public User[] Users;
     }
 }
 
@@ -111,7 +180,7 @@ namespace Yahoo.FireEagle
         private bool isRequestToken = false;
 
         /// <summary>
-        /// Constructor for 
+        /// Constructor to use when obtaining a request token.
         /// </summary>
         public FireEagle()
         {
@@ -119,7 +188,7 @@ namespace Yahoo.FireEagle
         }
 
         /// <summary>
-        /// Constructor for when you have a request or access token.
+        /// Constructor to use when you have a request or access token.
         /// </summary>
         /// <param name="oauthToken"></param>
         /// <param name="oauth_secret"></param>
@@ -133,7 +202,7 @@ namespace Yahoo.FireEagle
 
         private void Setup()
         {
-            // Try to fetch consumer key + secret from web.config if not given
+            // Try to fetch consumer key + secret from Web.Config if not given
             if (CONSUMER_KEY == null) CONSUMER_KEY = ConfigurationManager.AppSettings["FEConsumerKey"];
             if (CONSUMER_SECRET == null) CONSUMER_SECRET = ConfigurationManager.AppSettings["FEConsumerSecret"];
             Debug.Assert(CONSUMER_KEY != null, "CONSUMER_KEY not set; you can put it the <appSettings> block in Web.Config as FEConsumerKey");
@@ -151,6 +220,7 @@ namespace Yahoo.FireEagle
             isRequestToken = true;
         }
 
+        // Current request or access tokens
         public string OauthToken { get { return this.oauthToken; } }
         public string OauthTokenSecret { get { return this.oauthTokenSecret; } }
 
@@ -274,7 +344,7 @@ namespace Yahoo.FireEagle
                     }
                 }
                 catch (FireEagleException fe_e) { throw fe_e; }
-                catch (Exception failure_e) { } // if anything fails above, just fall through
+                catch (Exception) { } // if anything fails above, just fall through
 
                 throw new FireEagleException(String.Format("Error communicating with Fire Eagle: {0}", e.Message), e);
             }

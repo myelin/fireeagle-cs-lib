@@ -16,17 +16,21 @@
         <%= lookup.ToJson() %>
     <% } %>
 
-    <h2>Where you are</h2>
-    <% foreach (Yahoo.FireEagle.API.Location loc in location.LocationHierarchy.Locations) { %>
-        <h3>[<%= esc(loc.Id) %>] <%= esc(loc.Name) %> (level <%= esc(loc.Level) %> - <%= esc(loc.LevelName) %>)<% if (loc.IsBestGuess) { %> BEST GUESS<% } %></h3>
+    <h2>Where you (<%= h(user.Token) %>) are</h2>
+    <% foreach (Yahoo.FireEagle.API.Location loc in user.LocationHierarchy.Locations) { %>
+        <h3>[<%= h(loc.Id) %>] <%= h(loc.Name) %> (level <%= h(loc.Level) %> - <%= h(loc.LevelName) %>)<% if (loc.IsBestGuess) { %> BEST GUESS<% } %></h3>
         <ul>
             <% if (!string.IsNullOrEmpty(loc.Label)) { %>
-                <li>Label: <%= esc(loc.Label) %></li>
+                <li>Label: <%= h(loc.Label) %></li>
             <% } %>
-            <li>Point: <%= esc(loc.Point) %></li>
-            <li>Box: <%= esc(loc.Box) %></li>
-            <li>Located at: <%= esc(loc.LocatedAt) %></li>
-            <li>WOEID <%= esc(loc.WoeId) %>, PlaceID <%= esc(loc.PlaceId) %></li>
+            <% if (loc.GeoType == Yahoo.FireEagle.API.GeoType.Point) { %>
+                <li>Point: (lat, lon) = <%= h(loc.Point.Latitude)%>, <%= h(loc.Point.Longitude) %></li>
+            <% } else if (loc.GeoType == Yahoo.FireEagle.API.GeoType.Box) {
+                   Yahoo.FireEagle.API.Box bbox = loc.BoundingBox; %>
+                <li>Box: top left (lat, lon) = <%= h(bbox.TopLeft.Latitude) %>, <%= h(bbox.TopLeft.Longitude) %>; bot right (lat, lon) = <%= h(bbox.BottomRight.Latitude) %>, <%= h(bbox.BottomRight.Longitude) %></li>
+                <li>WOEID <%= h(loc.WoeId) %>, PlaceID <%= h(loc.PlaceId) %></li>
+            <% } %>
+            <li>Located at: <%= h(loc.LocatedAt) %></li>
         </ul>
     <% } %>
 

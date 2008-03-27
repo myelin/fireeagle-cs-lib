@@ -15,12 +15,12 @@ public partial class _Default : System.Web.UI.Page
 {
     // flags to pass back to Default.aspx
     public bool authorized;
-    public Yahoo.FireEagle.API.User location = null;
+    public Yahoo.FireEagle.API.User user = null;
     public JsonData lookup = null;
 
-    public string esc(string html) { return HttpUtility.HtmlEncode(html); }
-
-    public string esc(int v) { return v.ToString(); }
+    public string h(string html) { return HttpUtility.HtmlEncode(html); }
+    public string h(int v) { return v.ToString(); }
+    public string h(double v) { return v.ToString(); }
 
     // current url, minus any query params
     public string BaseUrl
@@ -111,7 +111,7 @@ public partial class _Default : System.Web.UI.Page
                 }
             }
 
-            location = fe.user();
+            user = fe.user();
         }
     }
 }
