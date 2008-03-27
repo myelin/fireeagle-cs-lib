@@ -15,8 +15,12 @@ public partial class _Default : System.Web.UI.Page
 {
     // flags to pass back to Default.aspx
     public bool authorized;
-    public JsonData location = null,
-        lookup = null;
+    public Yahoo.FireEagle.API.User location = null;
+    public JsonData lookup = null;
+
+    public string esc(string html) { return HttpUtility.HtmlEncode(html); }
+
+    public string esc(int v) { return v.ToString(); }
 
     // current url, minus any query params
     public string BaseUrl

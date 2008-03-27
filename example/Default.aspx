@@ -17,7 +17,18 @@
     <% } %>
 
     <h2>Where you are</h2>
-    <%= location.ToJson() %>
+    <% foreach (Yahoo.FireEagle.API.Location loc in location.LocationHierarchy.Locations) { %>
+        <h3>[<%= esc(loc.Id) %>] <%= esc(loc.Name) %> (level <%= esc(loc.Level) %> - <%= esc(loc.LevelName) %>)<% if (loc.IsBestGuess) { %> BEST GUESS<% } %></h3>
+        <ul>
+            <% if (!string.IsNullOrEmpty(loc.Label)) { %>
+                <li>Label: <%= esc(loc.Label) %></li>
+            <% } %>
+            <li>Point: <%= esc(loc.Point) %></li>
+            <li>Box: <%= esc(loc.Box) %></li>
+            <li>Located at: <%= esc(loc.LocatedAt) %></li>
+            <li>WOEID <%= esc(loc.WoeId) %>, PlaceID <%= esc(loc.PlaceId) %></li>
+        </ul>
+    <% } %>
 
     <h2>Update</h2>
     

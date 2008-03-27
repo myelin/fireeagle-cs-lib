@@ -20,6 +20,66 @@ using LitJson;
 using System.Collections;
 using System.Xml.Serialization;
 
+namespace Yahoo.FireEagle.API
+{
+    public class Location
+    {
+        [XmlAttributeAttribute("best-guess")]
+        public bool IsBestGuess;
+
+        [XmlElementAttribute("id")]
+        public string Id;
+
+        //TODO: parse (use a property which can be set with a string)
+        [XmlElementAttribute("point", Namespace = "http://www.georss.org/georss")]
+        public string Point;
+
+        //TODO: parse (use a property which can be set with a string)
+        [XmlElementAttribute("box", Namespace = "http://www.georss.org/georss")]
+        public string Box;
+
+        [XmlElementAttribute("label")]
+        public string Label;
+
+        [XmlElementAttribute("level")]
+        public int Level;
+
+        [XmlElementAttribute("level-name")]
+        public string LevelName;
+
+        [XmlElementAttribute("located-at")]
+        public string LocatedAt;
+
+        [XmlElementAttribute("name")]
+        public string Name;
+
+        [XmlElementAttribute("place-id")]
+        public string PlaceId;
+
+        [XmlElementAttribute("woeid")]
+        public string WoeId;
+    }
+
+    public class LocationHierarchy
+    {
+        [XmlElementAttribute("location")]
+        public Location[] Locations;
+    }
+
+    public class User
+    {
+        [XmlElementAttribute("location-hierarchy")]
+        public LocationHierarchy LocationHierarchy;
+    }
+
+    [XmlRootAttribute("rsp")]
+    public class Response
+    {
+        [XmlElementAttribute("user")]
+        public User User;
+    }
+}
+
 namespace Yahoo.FireEagle
 {
 
@@ -138,9 +198,12 @@ namespace Yahoo.FireEagle
         }
 
         // Wrapper for the 'where am I' method: "user"
-        public JsonData user()
+        public API.User user()
         {
-            return CallJson("user", null);
+            string xml = CallInternal("GET", FE_API_ROOT + "api/0.1/user.xml", null);
+            XmlSerializer xs = new XmlSerializer(typeof(API.Response));
+            API.Response rsp = (API.Response)xs.Deserialize(new StringReader(xml));
+            return rsp.User;
         }
 
         // Wrapper for the 'set my location' method: "update"
