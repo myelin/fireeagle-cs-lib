@@ -17,7 +17,7 @@
     <% } %>
 
     <h2>Where you (<%= h(user.Token) %>) are</h2>
-    <% foreach (Yahoo.FireEagle.API.Location loc in user.LocationHierarchy.Locations) { %>
+    <% foreach (Yahoo.FireEagle.API.Location loc in user.LocationHierarchy) { %>
         <h3>[<%= h(loc.Id) %>] <%= h(loc.Name) %> (level <%= h(loc.Level) %> - <%= h(loc.LevelName) %>)<% if (loc.IsBestGuess) { %> BEST GUESS<% } %></h3>
         <ul>
             <% if (!string.IsNullOrEmpty(loc.Label)) { %>

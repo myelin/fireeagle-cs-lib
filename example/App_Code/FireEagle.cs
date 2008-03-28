@@ -118,19 +118,13 @@ namespace Yahoo.FireEagle.API
         public string WoeId;
     }
 
-    public class LocationHierarchy
-    {
-        [XmlElement("location")]
-        public Location[] Locations;
-    }
-
     public class User
     {
         [XmlAttribute("token")]
         public string Token; // oauth_token for this user
 
-        [XmlElement("location-hierarchy")]
-        public LocationHierarchy LocationHierarchy;
+        [XmlArrayItem("location"), XmlArray("location-hierarchy")]
+        public Location[] LocationHierarchy;
     }
 
     [XmlRoot("rsp")]
